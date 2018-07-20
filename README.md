@@ -9,12 +9,16 @@ Using Java NIO.
 ```scala
     // target path
     val zip = ScZip(Paths.get("./project"))
-    // Pass output file path and run.
+    // Pass an output file path and run.
     zip.zipToFile(Paths.get("./out.zip"))
 ```
 
 ### Set exclude condition.
- 
+
+Can set exclude pattern by glob without "glob:".
+
+https://docs.oracle.com/javase/tutorial/essential/io/fileOps.html#glob
+
 ```scala
     val zip = ScZip(Paths.get("./project"), Exclude("**/*.{class,cache}"))
 
