@@ -23,7 +23,7 @@ https://docs.oracle.com/javase/tutorial/essential/io/fileOps.html#glob
     val zip = ScZip(Paths.get("./project"), Exclude("**/*.{class,cache}"))
 
     // Can get byte array instead of saving a zip file.
-    val bytes: Array[Byte] = zip.zipToFileToBytes()
+    val bytes: Array[Byte] = zip.zipToBytes()
 ```
 
 That's all.

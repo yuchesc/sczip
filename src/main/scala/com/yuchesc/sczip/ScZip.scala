@@ -16,7 +16,7 @@ class ScZip(targetPath: Path, exclude: Option[Condition]) {
     zipToOutputStream(new FileOutputStream(outPath.toFile))
   }
 
-  def zipToFileToBytes(): Array[Byte] = {
+  def zipToBytes(): Array[Byte] = {
     val out = new ByteArrayOutputStream()
     zipToOutputStream(out)
     out.toByteArray
@@ -32,7 +32,7 @@ object ScZip {
   def main(args: Array[String]): Unit = {
     val zip = ScZip(Paths.get("./project"), Exclude("**/*.{class,cache}"))
 
-    val bytes = zip.zipToFileToBytes()
+    val bytes = zip.zipToBytes()
     println(bytes.length)
 
     zip.zipToFile(Paths.get("./out.zip"))
