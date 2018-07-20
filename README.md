@@ -1,2 +1,5 @@
-# sczip
-Zip archive for Scala.
+# ScZip
+
+Simple zip archive for Scala.
+
+

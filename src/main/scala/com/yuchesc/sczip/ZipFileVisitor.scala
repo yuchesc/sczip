@@ -5,9 +5,9 @@ import java.nio.file._
 import java.nio.file.attribute.BasicFileAttributes
 import java.util.zip.{ZipEntry, ZipOutputStream}
 
-protected class ZipFileVisitor(zip: ZipOutputStream, condition: Condition) extends SimpleFileVisitor[Path] {
+protected class ZipFileVisitor(zip: ZipOutputStream, exclude: Option[Condition]) extends SimpleFileVisitor[Path] {
   override def visitFile(file: Path, attrs: BasicFileAttributes): FileVisitResult = {
-    if (condition.hit(file)) {
+    if (exclude.isEmpty || !exclude.get.hit(file)) {
       val entry = new ZipEntry(file.toString)
       zip.putNextEntry(entry)
       val buffer = Array.ofDim[Byte](255)

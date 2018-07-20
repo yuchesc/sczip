@@ -4,29 +4,37 @@ import java.io._
 import java.nio.file._
 import java.util.zip.ZipOutputStream
 
-object ScZip {
+class ScZip(targetPath: Path, exclude: Option[Condition]) {
 
-  def zipTreeToOutputStream(out: OutputStream, root: Path, condition: Condition): Unit = {
+  def zipToOutputStream(out: OutputStream): Unit = {
     val zip = new ZipOutputStream(out)
-    Files.walkFileTree(root, new ZipFileVisitor(zip, condition))
+    Files.walkFileTree(targetPath, new ZipFileVisitor(zip, exclude))
     zip.close()
   }
 
-  def zipTreeToFile(root: Path, outPath: Path, condition: Condition): Unit = {
-    zipTreeToOutputStream(new FileOutputStream(outPath.toFile), root, condition)
+  def zipToFile(outPath: Path): Unit = {
+    zipToOutputStream(new FileOutputStream(outPath.toFile))
   }
 
-  def zipTreeToFileToBytes(root: Path, condition: Condition): Array[Byte] = {
+  def zipToFileToBytes(): Array[Byte] = {
     val out = new ByteArrayOutputStream()
-    zipTreeToOutputStream(out, root, condition)
+    zipToOutputStream(out)
     out.toByteArray
   }
+}
+
+object ScZip {
+
+  def apply(targetPath: Path): ScZip = new ScZip(targetPath, None)
+
+  def apply(targetPath: Path, exclude: Condition): ScZip = new ScZip(targetPath, Option(exclude))
 
   def main(args: Array[String]): Unit = {
-    val cond = Condition.pathMatch("**/*.{class,properties}")
-    zipTreeToFile(Paths.get("./project"), Paths.get("./hoge/out.zip"), cond)
+    val zip = ScZip(Paths.get("./project"), Exclude("**/*.{class,cache}"))
 
-    val bytes = zipTreeToFileToBytes(Paths.get("./src"), cond)
+    val bytes = zip.zipToFileToBytes()
     println(bytes.length)
+
+    zip.zipToFile(Paths.get("./out.zip"))
   }
 }

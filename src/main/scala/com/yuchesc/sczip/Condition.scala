@@ -12,11 +12,6 @@ class PathMatchCondition(pattern: String) extends Condition {
   override def hit(file: Path): Boolean = matcher.matches(file)
 }
 
-class Not(condition: Condition) extends Condition {
-  override def hit(file: Path): Boolean = !condition.hit(file)
-}
-
-object Condition {
-  def pathMatch(pattern: String) = new PathMatchCondition(pattern)
-  def notPathMatch(pattern: String) = new Not(pathMatch(pattern))
+object Exclude {
+  def apply(pattern: String): Condition = new PathMatchCondition(pattern)
 }
