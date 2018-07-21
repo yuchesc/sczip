@@ -27,3 +27,19 @@ https://docs.oracle.com/javase/tutorial/essential/io/fileOps.html#glob
 ```
 
 That's all.
+
+## SBT
+
+It is available for 2.11 or 2.12.
+
+Please append it in your libraryDependencies :)
+
+```scala
+libraryDependencies ++= Seq(
+  "com.yuchesc" %% "sczip" % "0.8"
+)
+```
+
+---
+
+This software is released under the MIT License, see LICENSE.txt.
