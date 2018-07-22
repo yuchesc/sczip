@@ -1,6 +1,6 @@
 # ScZip
 
-Simple zip archive (files compresses recursively) for Scala.
+Simple zip archive (files compresses recursively) library for Scala.
 
 ## How to use
 
