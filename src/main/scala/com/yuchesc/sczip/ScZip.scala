@@ -4,11 +4,19 @@ import java.io._
 import java.nio.file._
 import java.util.zip.ZipOutputStream
 
-class ScZip(targetPath: Path, exclude: Option[Condition]) {
+case class ScZip(targetPath: Path,
+                 exclude: Option[Condition] = None,
+                 normalizeRootPath: Boolean = true) {
+
+  def dryRun(): Seq[String] = {
+    val visitor = new ListFileVisitor(exclude, normalizeRootPath)
+    Files.walkFileTree(targetPath, visitor)
+    visitor.getResult
+  }
 
   def zipToOutputStream(out: OutputStream): Unit = {
     val zip = new ZipOutputStream(out)
-    Files.walkFileTree(targetPath, new ZipFileVisitor(zip, exclude))
+    Files.walkFileTree(targetPath, new ZipFileVisitor(zip, exclude, normalizeRootPath))
     zip.close()
   }
 
@@ -25,16 +33,18 @@ class ScZip(targetPath: Path, exclude: Option[Condition]) {
 
 object ScZip {
 
-  def apply(targetPath: Path): ScZip = new ScZip(targetPath, None)
-
-  def apply(targetPath: Path, exclude: Condition): ScZip = new ScZip(targetPath, Option(exclude))
-
   def main(args: Array[String]): Unit = {
-    val zip = ScZip(Paths.get("./project"), Exclude("**/*.{class,cache}"))
+    val zip = ScZip(Paths.get("./project"), Option(Exclude("**/*.{class,cache}")))
 
     val bytes = zip.zipToBytes()
     println(bytes.length)
 
     zip.zipToFile(Paths.get("./out.zip"))
+
+    //zip.dryRun().foreach(println)
+    val zip2 = ScZip(targetPath = Paths.get("./src/test/resource"),
+      exclude = Option(Exclude("**/{test.a,test1.b}")),
+      normalizeRootPath = true)
+    zip2.dryRun().foreach(println)
   }
 }
