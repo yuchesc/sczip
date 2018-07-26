@@ -38,7 +38,7 @@ Please append it in your libraryDependencies :)
 
 ```scala
 libraryDependencies ++= Seq(
-  "com.yuchesc" %% "sczip" % "0.9"
+  "com.yuchesc" %% "sczip" % "0.9.1"
 )
 ```
 
