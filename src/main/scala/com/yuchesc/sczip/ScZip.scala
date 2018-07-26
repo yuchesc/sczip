@@ -4,21 +4,39 @@ import java.io._
 import java.nio.file._
 import java.util.zip.ZipOutputStream
 
+/**
+ * Zip executor.
+ * 
+ * @param targetPath Target zip root path.
+ * @param exclude Exclude files from target via glob match pattern.
+ * @param normalizeRootPath If true, eliminate root or relative path from starting point.
+ */
 case class ScZip(targetPath: Path,
                  exclude: Option[Condition] = None,
                  normalizeRootPath: Boolean = true) {
 
+  /**
+   * Walk target path and collect each file path.
+   *
+   * @return Zip target file list.
+   */
   def dryRun(): Seq[String] = {
     val visitor = new ListFileVisitor(exclude, normalizeRootPath)
     Files.walkFileTree(targetPath, visitor)
     visitor.getResult
   }
 
+  /**
+   * Zip files into out stream.
+   *
+   * @param out stream to write zip data.
+   */
   def zipToOutputStream(out: OutputStream): Unit = {
     val zip = new ZipOutputStream(out)
     Files.walkFileTree(targetPath, new ZipFileVisitor(zip, exclude, normalizeRootPath))
     zip.close()
   }
+
 
   def zipToFile(outPath: Path): Unit = {
     zipToOutputStream(new FileOutputStream(outPath.toFile))
@@ -32,6 +50,7 @@ case class ScZip(targetPath: Path,
 }
 
 object ScZip {
+
 
   def main(args: Array[String]): Unit = {
     val zip = ScZip(Paths.get("./project"), Option(Exclude("**/*.{class,cache}")))
