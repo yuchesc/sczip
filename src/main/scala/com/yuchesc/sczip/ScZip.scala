@@ -38,6 +38,8 @@ class ScZip(targetPath: Path,
   }
 
 
+  def zipToFile(outPathName: String): Unit = zipToFile(Paths.get(outPathName))
+
   def zipToFile(outPath: Path): Unit = {
     zipToOutputStream(new FileOutputStream(outPath.toFile))
   }
@@ -94,7 +96,7 @@ object ScZip {
     val bytes = zip.zipToBytes()
     println(bytes.length)
 
-    zip.zipToFile(Paths.get("./out.zip"))
+    zip.zipToFile("./out.zip")
 
     //zip.dryRun().foreach(println)
     val zip2 = new ScZip(targetPath = Paths.get("./src/test/resource"),
