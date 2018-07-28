@@ -7,25 +7,19 @@ Simple zip archive (files compresses recursively) library for Scala.
 Using Java NIO.
 
 ```scala
-    // target path
-    val zip = ScZip("./project")
-    // Can get file list
-    zip.dryRun().foreach(println)
-    // Pass an output file path and run.
-    zip.zipToFile("./out.zip")
-```
+    // Add files recursively and make zip data.
+    ScZip.zipTreeToFile(Paths.get("./project"), Paths.get("out.zip"))
+      .foreach(println) // print entry files
 
-### Set exclude condition.
+    // Can get zip data instead of file
+    val data = ScZip.zipTreeToBytes(Paths.get("./project"))
+    println(data.length)
 
-Can set exclude pattern by glob without "glob:".
-
-https://docs.oracle.com/javase/tutorial/essential/io/fileOps.html#glob
-
-```scala
-    val zip = ScZip("./project", "**/*.{class,cache}")
-
-    // Can get byte array instead of saving a zip file.
-    val bytes: Array[Byte] = zip.zipToBytes()
+    // Set exclude condition by glob pattern without "glob:".
+    ScZip.zipTreeToFile(Paths.get("./project"), Paths.get("out.zip"), ScZip.makeExclude("**/*.{cache,class}"))
+      .foreach(println)
+    val data2 = ScZip.zipTreeToBytes(Paths.get("./project"), ScZip.makeExclude("**/*.{cache,class}"))
+    println(data2.length)
 ```
 
 That's all.
@@ -38,7 +32,7 @@ Please append it in your libraryDependencies :)
 
 ```scala
 libraryDependencies ++= Seq(
-  "com.yuchesc" %% "sczip" % "0.9.1"
+  "com.yuchesc" %% "sczip" % "0.9.5"
 )
 ```
 

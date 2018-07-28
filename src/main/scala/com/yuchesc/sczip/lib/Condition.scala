@@ -1,4 +1,4 @@
-package com.yuchesc.sczip
+package com.yuchesc.sczip.lib
 
 import java.nio.file._
 
@@ -10,12 +10,4 @@ class PathMatchCondition(pattern: String) extends Condition {
   val matcher: PathMatcher = FileSystems.getDefault.getPathMatcher(s"glob:$pattern")
 
   override def hit(file: Path): Boolean = matcher.matches(file)
-}
-
-/**
-  * Exclude pattern object.
-  * Note: may program Include some day...
-  */
-object Exclude {
-  def apply(pattern: String): Condition = new PathMatchCondition(pattern)
 }
