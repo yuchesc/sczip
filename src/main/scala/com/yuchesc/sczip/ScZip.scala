@@ -2,106 +2,118 @@ package com.yuchesc.sczip
 
 import java.io._
 import java.nio.file._
-import java.util.zip.ZipOutputStream
+
+import com.yuchesc.sczip.lib._
 
 /**
-  * Zip executor.
-  *
-  * @param targetPath        Target zip root path.
-  * @param exclude           Exclude files from target via glob match pattern.
-  * @param normalizeRootPath If true, eliminate root or relative path from starting point.
-  */
-class ScZip(targetPath: Path,
-            exclude: Option[Condition] = None,
-            normalizeRootPath: Boolean = true) {
-
-  /**
-    * Walk target path and collect each file path.
-    *
-    * @return Zip target file list.
-    */
-  def dryRun(): Seq[String] = {
-    val visitor = new ListFileVisitor(exclude, normalizeRootPath)
-    Files.walkFileTree(targetPath, visitor)
-    visitor.getResult
-  }
-
-  /**
-    * Zip files into out stream.
-    *
-    * @param out stream to write zip data.
-    */
-  def zipToOutputStream(out: OutputStream): Unit = {
-    val zip = new ZipOutputStream(out)
-    Files.walkFileTree(targetPath, new ZipFileVisitor(zip, exclude, normalizeRootPath))
-    zip.close()
-  }
-
-
-  def zipToFile(outPathName: String): Unit = zipToFile(Paths.get(outPathName))
-
-  def zipToFile(outPath: Path): Unit = {
-    zipToOutputStream(new FileOutputStream(outPath.toFile))
-  }
-
-  def zipToBytes(): Array[Byte] = {
-    val out = new ByteArrayOutputStream()
-    zipToOutputStream(out)
-    out.toByteArray
-  }
-}
-
-/**
-  * ScZip object creator.
+  * Make zip easily.
   */
 object ScZip {
 
   /**
-    * The simplest way to create an object.
+    * Make exclude object covered with Option.
     *
-    * @param targetPathName Target zip root path string.
-    * @return object
+    * @param pattern glob match pattern
+    * @return exclude object covered with Option
     */
-  def apply(targetPathName: String): ScZip = apply(Paths.get(targetPathName))
+  def makeExclude(pattern: String): Option[Condition] = Option(new PathMatchCondition(pattern))
 
   /**
-    * Make sczip.
+    * Add files recursively and make zip data.
     *
-    * @param targetPathName Target zip root path string.
-    * @param excludePattern Exclude glob match pattern.
-    * @return object
+    * @param targetPath target zip root path
+    * @param exclude    exclude object
+    * @return zip data
     */
-  def apply(targetPathName: String, excludePattern: String): ScZip = apply(Paths.get(targetPathName), Exclude(excludePattern))
+  def zipTreeToBytes(targetPath: Path, exclude: Option[Condition] = None): Array[Byte] = {
+    val out = new ByteArrayOutputStream()
+    zipTree(targetPath, out, exclude)
+    out.toByteArray
+  }
 
   /**
-    * Make sczip.
+    * Add files recursively and make and write zip to file.
     *
-    * @param targetPath Target zip root path.
-    * @return object
+    * @param targetPath target zip root path
+    * @param outPath    output path
+    * @param exclude    exclude object
+    * @return entry name list
     */
-  def apply(targetPath: Path): ScZip = new ScZip(targetPath, None)
+  def zipTreeToFile(targetPath: Path, outPath: Path, exclude: Option[Condition] = None): Seq[String] =
+    zipTree(targetPath, new BufferedOutputStream(new FileOutputStream(outPath.toFile)), exclude)
 
   /**
-    * Make sczip.
+    * Add files recursively and make and write zip to out.
     *
-    * @param targetPath Target zip root path.
-    * @param exclude    Exclude files from target via glob match pattern.
+    * @param targetPath Target zip root path
+    * @param out        output stream to write zip data
+    * @param exclude    exclude object
+    * @return entry name list
     */
-  def apply(targetPath: Path, exclude: Condition): ScZip = new ScZip(targetPath, Option(exclude))
+  def zipTree(targetPath: Path, out: OutputStream, exclude: Option[Condition] = None): Seq[String] = {
+    var zip: Option[Zipper] = None
+    try {
+      zip = Option(new Zipper(out))
+      zip.get.addTree(targetPath, exclude)
+    } finally {
+      zip.foreach(_.close())
+    }
+  }
 
+
+  /**
+    * Make zip data.
+    *
+    * @param files zip target files
+    * @return zip data
+    */
+  def zipFilesToBytes(files: Seq[Path]): Array[Byte] = {
+    val out = new ByteArrayOutputStream()
+    zipFiles(files, out)
+    out.toByteArray
+  }
+
+  /**
+    * Make and write zip to file.
+    *
+    * @param files   zip target files
+    * @param outPath output path
+    * @return entry name list
+    */
+  def zipFilesToFile(files: Seq[Path], outPath: Path): Seq[String] = {
+    zipFiles(files, new BufferedOutputStream(new FileOutputStream(outPath.toFile)))
+  }
+
+  /**
+    * Make and write zip to out.
+    *
+    * @param files zip target files
+    * @param out   output stream to write zip data
+    * @return entry name list
+    */
+  def zipFiles(files: Seq[Path], out: OutputStream): Seq[String] = {
+    var zip: Option[Zipper] = None
+    try {
+      zip = Option(new Zipper(out))
+      files.map(zip.get.add)
+    } finally {
+      zip.foreach(_.close())
+    }
+  }
 
   def main(args: Array[String]): Unit = {
-    val zip = ScZip("./project", "**/*.{class,cache}")
+    // Add files recursively and make zip data.
+    ScZip.zipTreeToFile(Paths.get("./project"), Paths.get("out.zip"))
+      .foreach(println) // print entry files
 
-    val bytes = zip.zipToBytes()
-    println(bytes.length)
+    // Can get zip data instead of file
+    val data = ScZip.zipTreeToBytes(Paths.get("./project"))
+    println(data.length)
 
-    zip.zipToFile("./out.zip")
-
-    //zip.dryRun().foreach(println)
-    val zip2 = new ScZip(targetPath = Paths.get("./src/test/resource"),
-      exclude = Option(Exclude("**/{test.a,test1.b}")),
-      normalizeRootPath = false)
-    zip2.dryRun().foreach(println)
+    // Set exclude condition by glob pattern without "glob:".
+    ScZip.zipTreeToFile(Paths.get("./project"), Paths.get("out.zip"), ScZip.makeExclude("**/*.{cache,class}"))
+      .foreach(println)
+    val data2 = ScZip.zipTreeToBytes(Paths.get("./project"), ScZip.makeExclude("**/*.{cache,class}"))
+    println(data2.length)
   }
 }

@@ -1,6 +1,6 @@
 name := "sczip"
 
-version := "0.9.1"
+version := "0.9.5"
 
 organization := "com.yuchesc"
 
