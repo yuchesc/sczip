@@ -51,13 +51,10 @@ object ScZip {
     * @return entry name list
     */
   def zipTree(targetPath: Path, out: OutputStream, exclude: Option[Condition] = None): Seq[String] = {
-    var zip: Option[Zipper] = None
-    try {
-      zip = Option(new Zipper(out))
-      zip.get.addTree(targetPath, exclude)
-    } finally {
-      zip.foreach(_.close())
-    }
+    Zipper.withResource(out, {
+      zip =>
+        zip.addTree(targetPath, exclude)
+    })
   }
 
 
@@ -92,13 +89,10 @@ object ScZip {
     * @return entry name list
     */
   def zipFiles(files: Seq[Path], out: OutputStream): Seq[String] = {
-    var zip: Option[Zipper] = None
-    try {
-      zip = Option(new Zipper(out))
-      files.map(zip.get.add)
-    } finally {
-      zip.foreach(_.close())
-    }
+    Zipper.withResource(out, {
+      zip =>
+        files.map(zip.add)
+    })
   }
 
   def main(args: Array[String]): Unit = {

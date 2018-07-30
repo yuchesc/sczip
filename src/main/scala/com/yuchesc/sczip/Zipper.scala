@@ -78,3 +78,23 @@ class Zipper(out: OutputStream,
     */
   def close(): Unit = zip.close()
 }
+
+object Zipper {
+  /**
+    * Use zipper object with auto close.
+    *
+    * @param out the output stream
+    * @param f   implement
+    * @tparam A return type
+    * @return
+    */
+  def withResource[A](out: OutputStream, f: Zipper => A): A = {
+    var zip: Option[Zipper] = None
+    try {
+      zip = Option(new Zipper(out))
+      f(zip.get)
+    } finally {
+      zip.foreach(_.close())
+    }
+  }
+}
