@@ -8,11 +8,11 @@ Using Java NIO.
 
 ```scala
     // Add files recursively and make zip data.
-    ScZip.zipTreeToFile(Paths.get("./project"), Paths.get("out.zip"))
-      .foreach(println) // print entry files
+    val list: Seq[String] = ScZip.zipTreeToFile(Paths.get("./project"), Paths.get("out.zip"))
+    list.foreach(println) // entry files
 
     // Can get zip data instead of file
-    val data = ScZip.zipTreeToBytes(Paths.get("./project"))
+    val data: Array[Byte] = ScZip.zipTreeToBytes(Paths.get("./project"))
     println(data.length)
 
     // Set exclude condition by glob pattern without "glob:".
@@ -32,7 +32,7 @@ Please append it in your libraryDependencies :)
 
 ```scala
 libraryDependencies ++= Seq(
-  "com.yuchesc" %% "sczip" % "0.9.5"
+  "com.yuchesc" %% "sczip" % "1.0.0"
 )
 ```
 
