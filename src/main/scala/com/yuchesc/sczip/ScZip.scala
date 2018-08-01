@@ -143,9 +143,8 @@ object ScZip {
     * @return entry name list
     */
   def zipTree(targetPath: Path, out: OutputStream, exclude: Option[Condition] = None): Seq[String] = {
-    ScZip.withResource(out, {
-      zip =>
-        zip.addTree(targetPath, exclude)
+    ScZip.withResource(out, { zip =>
+      zip.addTree(targetPath, exclude)
     })
   }
 
@@ -181,19 +180,18 @@ object ScZip {
     * @return entry name list
     */
   def zipFiles(files: Seq[Path], out: OutputStream): Seq[String] = {
-    ScZip.withResource(out, {
-      zip =>
+    ScZip.withResource(out, { zip =>
         files.map(zip.add)
     })
   }
 
   def main(args: Array[String]): Unit = {
     // Add files recursively and make zip data.
-    ScZip.zipTreeToFile(Paths.get("./project"), Paths.get("out.zip"))
-      .foreach(println) // print entry files
+    val list: Seq[String] = ScZip.zipTreeToFile(Paths.get("./project"), Paths.get("out.zip"))
+    list.foreach(println) // entry files
 
     // Can get zip data instead of file
-    val data = ScZip.zipTreeToBytes(Paths.get("./project"))
+    val data: Array[Byte] = ScZip.zipTreeToBytes(Paths.get("./project"))
     println(data.length)
 
     // Set exclude condition by glob pattern without "glob:".
